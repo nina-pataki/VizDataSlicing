@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import pyqtgraph as pg
 import dicom as di
 import pydicom_series as diSeries
@@ -6,6 +7,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 def dataSlicing(dataPath, masks=None):
     #Gui init
+    startTime = time.time()
     global app, win, imv1, imv2, imv3, hLine1, hLine2, hLine3, vLine1, vLine2, vLine3
     app = QtGui.QApplication([])
     win = QtGui.QMainWindow()
@@ -93,7 +95,8 @@ def dataSlicing(dataPath, masks=None):
     
     def updateV1(): 
     #updates image views that get affected by dragging in imv1 in vertical dimension
-        global imv3, img3, img3RGBA, vLine1 
+        global imv3, img3, img3RGBA, vLine1, vLine2
+        vLine2.setValue(vLine1.value()) 
         img3 = data[vLine1.value(),:,:]
         img3RGBA = pg.makeRGBA(img3,levels=[np.amin(img3),np.amax(img3)])[0]
         if maskCol is not None:
@@ -106,7 +109,8 @@ def dataSlicing(dataPath, masks=None):
     def updateH1():
     #updates image views that get affected by dragging in imv1 in horizontal
     #dimension
-        global img2, img2RGBA, imv2, hLine2
+        global img2, img2RGBA, imv2, hLine1, vLine3
+        vLine3.setValue(hLine1.value())
         img2 = data[:,hLine1.value(),:]
         img2RGBA = pg.makeRGBA(img2,levels=[np.amin(img2),np.amax(img2)])[0]
         if maskCol is not None:
@@ -120,7 +124,8 @@ def dataSlicing(dataPath, masks=None):
     hLine1.sigDragged.connect(updateH1)
         
     def updateV2():
-        global imv3, img3, img3RGBA, vLine2
+        global imv3, img3, img3RGBA, vLine2, vLine1
+        vLine1.setValue(vLine2.value())
         img3 = data[vLine2.value(),:,:]
         img3RGBA = pg.makeRGBA(img3,levels=[np.amin(img3),np.amax(img3)])[0]
         if maskCol is not None:
@@ -131,7 +136,8 @@ def dataSlicing(dataPath, masks=None):
         imv3.setImage(img3RGBA.astype(int))
 
     def updateH2():
-        global imv1, img1, img1RGBA, hLine2
+        global imv1, img1, img1RGBA, hLine2, hLine3
+        hLine3.setValue(hLine2.value())
         img1 = data[:,:,hLine2.value()]
         img1RGBA = pg.makeRGBA(img1,levels=[np.amin(img1),np.amax(img1)])[0]
         if maskCol is not None:
@@ -145,7 +151,8 @@ def dataSlicing(dataPath, masks=None):
     hLine2.sigDragged.connect(updateH2)
 
     def updateV3():
-        global imv2, img2, img2RGBA, vLine3
+        global imv2, img2, img2RGBA, vLine3, hLine1
+        hLine1.setValue(vLine3.value())
         img2 = data[:,vLine3.value(),:]
         img2RGBA = pg.makeRGBA(img2,levels=[np.amin(img2),np.amax(img2)])[0]
         if maskCol is not None:
@@ -156,7 +163,8 @@ def dataSlicing(dataPath, masks=None):
         imv2.setImage(img2RGBA.astype(int))
 
     def updateH3():
-        global imv1, img1, img1RGBA, hLine3
+        global imv1, img1, img1RGBA, hLine3, hLine2
+        hLine2.setValue(hLine3.value())
         img1 = data[:,:,hLine3.value()]
         img1RGBA = pg.makeRGBA(img1,levels=[np.amin(img1),np.amax(img1)])[0]
         if maskCol is not None:
@@ -173,19 +181,21 @@ def dataSlicing(dataPath, masks=None):
     updateV1()
     updateH1()
     updateH2()
-    
+    endTime = time.time()
+    elapsed = endTime - startTime
+    print "time elapsed: ", elapsed
 
 ## Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
     import sys
-    mask1 = np.zeros((160,512,512),dtype=np.ubyte)
-    mask2 = np.zeros((160,512,512),dtype=np.ubyte)
-    mask3 = np.zeros((160,512,512),dtype=np.ubyte)
-    mask2[20:120,:,:]=1
-    mask3[:,200:300,:]=1
-    mask1[50:70,:,:]=1
-    masks=[mask1,mask2,mask3]
-    dataSlicing('/home/nina/Downloads/Master thesis/data/dicom',masks)
+#    mask1 = np.zeros((160,512,512),dtype=np.ubyte)
+#    mask2 = np.zeros((160,512,512),dtype=np.ubyte)
+#    mask3 = np.zeros((160,512,512),dtype=np.ubyte)
+#    mask2[20:120,:,:]=1
+#    mask3[:,200:300,:]=1
+#    mask1[50:70,:,:]=1
+#    masks=[mask1,mask2,mask3]
+    dataSlicing('/home/nina/Downloads/Master thesis/data/dicom')
 
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         QtGui.QApplication.instance().exec_()
