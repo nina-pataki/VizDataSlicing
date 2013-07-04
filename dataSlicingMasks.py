@@ -188,6 +188,24 @@ def dataSlicing(dataPath, masks=None):
 ## Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
     import sys
+    import numpy as np
+    if (len(sys.argv)<2 or len(sys.argv)>3):
+        print """Please use script as follows: dataSlicingMasks arg1 arg2
+    arg1: path to folder containing dicom images
+    arg2: path to npz archive containing masks"""
+
+    elif (len(sys.argv)==2):        
+        dataSlicing(sys.argv[1])
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
+    else:
+        npzData = np.load(sys.argv[2])
+        masks = []
+        for i in nzpData.files:
+            masks.append(nzpData[i])
+        dataSlicing(sys.argv[1],masks)
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
 #    mask1 = np.zeros((160,512,512),dtype=np.ubyte)
 #    mask2 = np.zeros((160,512,512),dtype=np.ubyte)
 #    mask3 = np.zeros((160,512,512),dtype=np.ubyte)
@@ -195,7 +213,4 @@ if __name__ == '__main__':
 #    mask3[:,200:300,:]=1
 #    mask1[50:70,:,:]=1
 #    masks=[mask1,mask2,mask3]
-    dataSlicing('/home/nina/Downloads/Master thesis/data/dicom')
 
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
